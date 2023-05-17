@@ -2,7 +2,7 @@
   "name": "llonvne-online-judger-quasar",
   "version": "0.0.1",
   "description": "a online judge dev by Llonvne",
-  "productName": "llonvne_online_judge",
+  "productName": "Llonvne Online Judge",
   "author": "Llonvne <work@llonvne.cn>",
   "private": true,
   "scripts": {

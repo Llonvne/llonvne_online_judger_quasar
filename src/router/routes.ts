@@ -1,4 +1,4 @@
-import {RouteRecordRaw} from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -8,13 +8,35 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'home',
-        component: () => import('pages/HomePage.vue')
+        name: 'home',
+        component: () => import('pages/HomePage.vue'),
       },
       {
         path: 'problem',
-        component: () => import('pages/ProblemPage.vue')
-      }],
+        name: 'problem',
+        component: () => import('pages/ProblemPage.vue'),
+      },
+      {
+        path: 'detail',
+        name: 'detail',
+        component: () => import('pages/ProblemDetail.vue'),
+      },
+      {
+        path: 'status',
+        component: () => import('pages/StatusPage.vue'),
+      },
+      {
+        path: 'sub',
+        component: () => import('pages/SubDetail.vue'),
+      },
+      {
+        path: 'login',
+        name: 'Login',
+        component: () => import('pages/SigninPage.vue'),
+      },
+    ],
   },
+
   // Always leave this as last one,
   // but you can also remove it
   {

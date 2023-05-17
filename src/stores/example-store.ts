@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { api } from 'boot/axios';
 
 export const useCounterStore = defineStore('counter', {
   state: () => ({
@@ -12,4 +13,30 @@ export const useCounterStore = defineStore('counter', {
       this.counter++;
     },
   },
+});
+
+export const ProblemStore = defineStore('problem', {
+  state: () => ({
+    problems: [],
+    initialized: false,
+  }),
+  getters: {
+    getProblems: (state) => state.problems,
+  },
+  actions: {
+    syncProblems() {
+      return api
+        .get('http://localhost:9003/api/problems?size=5')
+        .then((data) => {
+          this.initialized = true;
+          this.problems = data.data['_embedded']['problems'];
+        });
+    },
+  },
+});
+
+export const UserStore = defineStore('user', {
+  state: () => ({
+    loginUser: null,
+  }),
 });

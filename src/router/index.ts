@@ -4,9 +4,12 @@ import {
   createRouter,
   createWebHashHistory,
   createWebHistory,
+  useRoute,
+  useRouter,
 } from 'vue-router';
 
 import routes from './routes';
+import { UserStore } from 'stores/example-store';
 
 /*
  * If not building with SSR mode, you can
@@ -20,7 +23,9 @@ import routes from './routes';
 export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
+    : process.env.VUE_ROUTER_MODE === 'history'
+    ? createWebHistory
+    : createWebHashHistory;
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
@@ -30,6 +35,20 @@ export default route(function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
+  });
+
+  Router.beforeEach(async (to, from) => {
+    if (to.name !== 'home' && to.name !== 'problem' && to.name != 'detail') {
+      if (
+        // 检查用户是否已登录
+        UserStore().loginUser == null &&
+        // ❗️ 避免无限重定向
+        to.name !== 'Login'
+      ) {
+        // 将用户重定向到登录页面
+        return { name: 'Login' };
+      }
+    }
   });
 
   return Router;

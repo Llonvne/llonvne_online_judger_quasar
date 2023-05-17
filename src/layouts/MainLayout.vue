@@ -1,28 +1,55 @@
 <template>
   <q-layout class="bg-grey-1">
-    <q-header elevated class="text-white" style="background: #24292e" height-hint="61.59">
+    <q-header
+      elevated
+      class="text-white"
+      style="background: #24292e"
+      height-hint="61.59"
+    >
       <q-toolbar class="q-py-sm q-px-md">
-        <q-btn round dense flat :ripple="false" icon="home" size="19px" color="white" class="q-mr-sm" no-caps
-               to="/home"/>
+        <q-btn
+          round
+          dense
+          flat
+          :ripple="false"
+          icon="home"
+          size="19px"
+          color="white"
+          class="q-mr-sm"
+          no-caps
+          to="/home"
+        />
 
-        <div v-if="$q.screen.gt.sm"
-             class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center no-wrap">
-          <router-link to="/problem" class="text-white">
-            Problems
-          </router-link>
-          <router-link to="/status" class="text-white">
-            Issues
-          </router-link>
+        <div
+          v-if="true"
+          class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center no-wrap"
+        >
+          <router-link to="/problem" class="text-white"> Problems</router-link>
+          <router-link to="/status" class="text-white"> Status</router-link>
         </div>
 
-        <q-space/>
+        <q-space />
 
-        <div class="q-pl-sm q-gutter-sm row items-center no-wrap">
-          <q-btn v-if="$q.screen.gt.xs" dense flat round size="sm" icon="notifications"/>
+        <div
+          v-if="userStore.loginUser != null"
+          class="q-pl-sm q-gutter-sm row items-center no-wrap"
+        >
+          <q-btn
+            v-if="$q.screen.gt.xs"
+            dense
+            flat
+            round
+            size="sm"
+            icon="notifications"
+          />
           <q-btn v-if="$q.screen.gt.xs" dense flat>
             <div class="row items-center no-wrap">
-              <q-icon name="add" size="20px"/>
-              <q-icon name="arrow_drop_down" size="16px" style="margin-left: -2px"/>
+              <q-icon name="add" size="20px" />
+              <q-icon
+                name="arrow_drop_down"
+                size="16px"
+                style="margin-left: -2px"
+              />
             </div>
             <q-menu auto-close>
               <q-list dense style="min-width: 100px">
@@ -38,7 +65,7 @@
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>New organization</q-item-section>
                 </q-item>
-                <q-separator/>
+                <q-separator />
                 <q-item-label header>This repository</q-item-label>
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>New issue</q-item-section>
@@ -49,27 +76,30 @@
 
           <q-btn dense flat no-wrap>
             <q-avatar rounded size="20px">
-              <img src="https://cdn.quasar.dev/img/avatar3.jpg">
+              <img src="https://cdn.quasar.dev/img/avatar3.jpg" alt="" />
             </q-avatar>
-            <q-icon name="arrow_drop_down" size="16px"/>
+            <q-icon name="arrow_drop_down" size="16px" />
 
             <q-menu auto-close>
               <q-list dense>
                 <q-item class="GL__menu-link-signed-in">
                   <q-item-section>
-                    <div>Signed in as <strong>Mary</strong></div>
+                    <div>
+                      Signed in as
+                      <strong>{{ userStore.loginUser.username }}</strong>
+                    </div>
                   </q-item-section>
                 </q-item>
-                <q-separator/>
+                <q-separator />
                 <q-item clickable class="GL__menu-link-status">
                   <q-item-section>
                     <div>
-                      <q-icon name="tag_faces" color="blue-9" size="18px"/>
+                      <q-icon name="tag_faces" color="blue-9" size="18px" />
                       Set your status
                     </div>
                   </q-item-section>
                 </q-item>
-                <q-separator/>
+                <q-separator />
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>Your profile</q-item-section>
                 </q-item>
@@ -85,7 +115,7 @@
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>Your gists</q-item-section>
                 </q-item>
-                <q-separator/>
+                <q-separator />
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>Help</q-item-section>
                 </q-item>
@@ -99,24 +129,52 @@
             </q-menu>
           </q-btn>
         </div>
+
+        <div v-if="userStore.loginUser == null">
+          <q-btn>
+            <router-link to="login">Sign in</router-link>
+          </q-btn>
+          &nbsp;
+          <q-btn>Sign up</q-btn>
+        </div>
       </q-toolbar>
     </q-header>
 
     <q-page-container>
-      <router-view/>
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
+import { UserStore } from 'stores/example-store';
+
 export default {
   name: 'MainLayout',
 
   setup() {
-    return {}
-  }
-}
+    const userStore = UserStore();
+
+    return {
+      userStore,
+    };
+  },
+};
 </script>
+
+<style scoped lang="css">
+router-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+a,
+a:hover,
+a:active,
+a:active {
+  color: inherit;
+}
+</style>
 
 <style lang="sass">
 .GL
