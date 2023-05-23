@@ -40,7 +40,7 @@
           <q-pagination
             v-if="pageMeta != null"
             v-model="current"
-            :max="pageMeta['totalPages']"
+            :max="pageMeta.totalPages"
             direction-links
           />
         </div>
@@ -124,81 +124,106 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from 'boot/axios';
 import { UserStore } from 'stores/example-store';
+
+class Submission {
+  id: number;
+  codeLength: number;
+  languageRepr: string;
+  submittedTime: string;
+  ojResult: string;
+  problem: {
+    problemName: string;
+    problemId: number;
+    _links: {
+      testCases: { href: string };
+      supportLanguages: { href: string };
+      self: { href: string; templated: boolean };
+    };
+  };
+  user: {
+    username: string;
+    _links: {
+      solvedProblem: { href: string; templated: boolean };
+      self: { href: string; templated: boolean };
+    };
+  };
+  _links: {
+    self: { href: string };
+    submission: { href: string; templated: boolean };
+    problem: { href: string; templated: boolean };
+    language: { href: string };
+    user: { href: string; templated: boolean };
+  };
+
+  constructor(data: any) {
+    this.id = data.id;
+    this.codeLength = data.codeLength;
+    this.languageRepr = data.languageRepr;
+    this.submittedTime = data.submittedTime;
+    this.ojResult = data.ojResult;
+    this.problem = data.problem;
+    this.user = data.user;
+    this._links = data._links;
+  }
+}
+
+class Page {
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  number: number;
+
+  constructor(data: any) {
+    this.size = data.size;
+    this.totalElements = data.totalElements;
+    this.totalPages = data.totalPages;
+    this.number = data.number;
+  }
+}
 
 export default defineComponent({
   name: 'statusPage',
   components: {},
-  mounted() {
-    api
-      .get(
-        'http://localhost:9003/api/submissions/search/statusProblem?projection=status&size=20&sort=submittedTime,asc'
-      )
-      .then((data) => {
-        this.pageMeta = data.data['page'];
-        this.submissions = data.data['_embedded'].submissions;
-        console.log(this.submissions);
-      });
-  },
   setup() {
-    const submissions = ref(null);
-
+    const submissions = ref<Array<Submission> | null>(null);
     const current = ref(1);
-
-    const pageMeta = ref(null);
-
-    const link = ref('');
-
+    const pageMeta = ref<Page | null>(null);
+    const link = ref<string>('');
     const userStore = UserStore();
+    const username = ref<string | null>(null);
 
-    const username = ref(null);
+    const fetchData = (username: string | null, page: number) => {
+      const url = username
+        ? `http://localhost:9003/api/submissions/search/statusProblem?projection=status&page=${page}&sort=submittedTime,asc&username=${username}`
+        : `submissions?projection=status&page=${page}&sort=submittedTime,asc`;
+      api.get(url).then((data) => {
+        pageMeta.value = new Page(data.data['page']);
+        submissions.value = data.data['_embedded'].submissions.map(
+          (item: any) => new Submission(item)
+        );
+      });
+    };
 
-    watch(current, (newCount, oldCount) => {
-      console.log(`Count changed from ${oldCount} to ${newCount}`);
+    onMounted(() => {
+      fetchData(null, 0);
+    });
+
+    watch(current, (newCount) => {
       submissions.value = null;
-      api
-        .get(
-          `submissions/search/statusProblem?projection=status&page=${
-            current.value - 1
-          }&username=${username.value}&sort=submittedTime,asc`
-        )
-        .then((data) => {
-          pageMeta.value = data.data['page'];
-          submissions.value = data.data['_embedded'].submissions;
-          console.log(submissions);
-        });
+      fetchData(username.value, newCount - 1);
     });
 
-    watch(username, (newName, oldName) => {
+    watch(username, (newName) => {
       current.value = 0;
-      if (newName == null) {
-        api
-          .get(
-            `submissions/search/statusProblem?projection=status&page=${
-              current.value - 1
-            }&sort=submittedTime,asc`
-          )
-          .then((data) => {
-            pageMeta.value = data.data['page'];
-            submissions.value = data.data['_embedded'].submissions;
-            console.log(submissions);
-          });
-      } else {
-      }
-      api
-        .get(
-          `submissions/search/statusProblem?projection=status&page=${
-            current.value - 1
-          }&username=${newName}`
-        )
-        .then((data) => {
-          pageMeta.value = data.data['page'];
-          submissions.value = data.data['_embedded'].submissions;
-          console.log(submissions);
-        });
+      fetchData(newName, current.value - 1);
     });
+
+    const getProblemUrl = (sub: Submission) => {
+      return `http://localhost:9000/#/detail?problemLinks=http://localhost:9003/api/problems/${sub.problem.problemId}`;
+    };
 
     return {
       submissions,
@@ -207,12 +232,8 @@ export default defineComponent({
       link,
       userStore,
       username,
+      getProblemUrl,
     };
-  },
-  methods: {
-    getProblemUrl(sub) {
-      return `http://localhost:9000/#/detail?problemLinks=http://localhost:9003/api/problems/${sub.problem.problemId}`;
-    },
   },
 });
 </script>
