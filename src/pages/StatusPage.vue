@@ -1,9 +1,55 @@
 <template>
   <div>
     <div class="row" style="padding-top: 1em">
-      <div class="col-2"></div>
+      <div class="col-2">
+        <div class="q-pa-md" style="max-width: 250px; margin-top: 4em">
+          <q-list bordered padding class="rounded-borders text-primary">
+            <q-item
+              clickable
+              v-ripple
+              :active="username === null"
+              @click="username = null"
+              active-class="my-menu-link"
+            >
+              <q-item-section avatar>
+                <q-icon name="inbox" />
+              </q-item-section>
+
+              <q-item-section>All</q-item-section>
+            </q-item>
+
+            <q-item
+              clickable
+              v-ripple
+              :disable="this.userStore.loginUser === null"
+              :active="username === this.userStore.loginUser.username"
+              @click="username = this.userStore.loginUser.username"
+              active-class="my-menu-link"
+            >
+              <q-item-section avatar>
+                <q-icon name="send" />
+              </q-item-section>
+
+              <q-item-section>Mine</q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+      </div>
       <div class="col-grow">
-        <q-markup-table separator="vertical" flat bordered>
+        <div class="q-pa-lg flex flex-center">
+          <q-pagination
+            v-if="pageMeta != null"
+            v-model="current"
+            :max="pageMeta['totalPages']"
+            direction-links
+          />
+        </div>
+        <q-markup-table
+          separator="vertical"
+          flat
+          bordered
+          style="margin-bottom: 3em"
+        >
           <thead>
             <tr>
               <th class="text-left">Username</th>
@@ -16,9 +62,11 @@
               <th class="text-right">Submit Time</th>
             </tr>
           </thead>
-          <tbody v-if="inited1 && inited2">
+          <tbody v-if="submissions != null">
             <tr v-for="sub in submissions" :key="sub.id">
-              <td class="text-left">{{ sub.user }}</td>
+              <td class="text-left">
+                <div v-if="sub.user != null">{{ sub.user.username }}</div>
+              </td>
               <td class="text-right">
                 <a :href="getProblemUrl(sub)">
                   {{ sub.problem.problemName }}
@@ -56,65 +104,110 @@
               </td>
               <td class="text-right">100</td>
               <td class="text-right">10</td>
-              <td class="text-right">{{ sub.code.length }}</td>
+              <td class="text-right">{{ sub.codeLength }}</td>
               <td class="text-right">
-                {{ sub.language.languageName }}
-                {{ sub.language.languageVersion }}
+                {{ sub.languageRepr }}
               </td>
               <td class="text-right">{{ sub.submittedTime }}</td>
             </tr>
           </tbody>
         </q-markup-table>
         <q-inner-loading
-          :showing="!inited1 || !inited2"
+          :showing="submissions == null"
           label="Please wait..."
           label-class="text-teal"
           label-style="font-size: 1.1em"
         />
       </div>
-      <div class="col-0.5">1</div>
+      <div class="col-1"></div>
     </div>
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, watch } from 'vue';
 import { api } from 'boot/axios';
-import axios from 'axios';
+import { UserStore } from 'stores/example-store';
 
 export default defineComponent({
   name: 'statusPage',
   components: {},
   mounted() {
-    console.log('!23');
-    api.get('http://localhost:9003/api/submissions?size=100').then((data) => {
-      this.submissions = data.data['_embedded'].submissions;
-
-      const problemRequests = this.submissions.map((sub) => {
-        return api.get(sub['_links']['problem']['href']);
+    api
+      .get(
+        'http://localhost:9003/api/submissions/search/statusProblem?projection=status&size=20&sort=submittedTime,asc'
+      )
+      .then((data) => {
+        this.pageMeta = data.data['page'];
+        this.submissions = data.data['_embedded'].submissions;
+        console.log(this.submissions);
       });
-
-      axios.all(problemRequests).then((resps) => {
-        for (let i = 0; i < resps.length; i++) {
-          this.submissions[i].problem = resps[i].data;
-          this.inited1 = true;
-        }
-      });
-      const languageRequests = this.submissions.map((sub) => {
-        return api.get(sub['_links']['language']['href']);
-      });
-      axios.all(languageRequests).then((resps) => {
-        for (let i = 0; i < resps.length; i++) {
-          this.submissions[i].language = resps[i].data;
-          this.inited2 = true;
-        }
-      });
-    });
   },
   setup() {
     const submissions = ref(null);
-    const inited1 = ref(false);
-    const inited2 = ref(false);
-    return { submissions, inited1, inited2 };
+
+    const current = ref(1);
+
+    const pageMeta = ref(null);
+
+    const link = ref('');
+
+    const userStore = UserStore();
+
+    const username = ref(null);
+
+    watch(current, (newCount, oldCount) => {
+      console.log(`Count changed from ${oldCount} to ${newCount}`);
+      submissions.value = null;
+      api
+        .get(
+          `submissions/search/statusProblem?projection=status&page=${
+            current.value - 1
+          }&username=${username.value}&sort=submittedTime,asc`
+        )
+        .then((data) => {
+          pageMeta.value = data.data['page'];
+          submissions.value = data.data['_embedded'].submissions;
+          console.log(submissions);
+        });
+    });
+
+    watch(username, (newName, oldName) => {
+      current.value = 0;
+      if (newName == null) {
+        api
+          .get(
+            `submissions/search/statusProblem?projection=status&page=${
+              current.value - 1
+            }&sort=submittedTime,asc`
+          )
+          .then((data) => {
+            pageMeta.value = data.data['page'];
+            submissions.value = data.data['_embedded'].submissions;
+            console.log(submissions);
+          });
+      } else {
+      }
+      api
+        .get(
+          `submissions/search/statusProblem?projection=status&page=${
+            current.value - 1
+          }&username=${newName}`
+        )
+        .then((data) => {
+          pageMeta.value = data.data['page'];
+          submissions.value = data.data['_embedded'].submissions;
+          console.log(submissions);
+        });
+    });
+
+    return {
+      submissions,
+      current,
+      pageMeta,
+      link,
+      userStore,
+      username,
+    };
   },
   methods: {
     getProblemUrl(sub) {

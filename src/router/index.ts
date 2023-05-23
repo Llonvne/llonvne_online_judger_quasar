@@ -38,7 +38,12 @@ export default route(function (/* { store, ssrContext } */) {
   });
 
   Router.beforeEach(async (to, from) => {
-    if (to.name !== 'home' && to.name !== 'problem' && to.name != 'detail') {
+    if (
+      to.name !== 'home' &&
+      to.name !== 'problem' &&
+      to.name != 'detail' &&
+      to.name != 'signup'
+    ) {
       if (
         // 检查用户是否已登录
         UserStore().loginUser == null &&

@@ -39,6 +39,12 @@
           only on Docker),
           <br />
           so please do not deploy this project directly to production.
+          <br />
+          Please keep the network latency between the back-end and the database
+          server as low as possible (if possible, place them on the same
+          server). Due to the complexity of the entity relationships, the
+          back-end may need to perform quite a few database operations quickly,
+          and a network database may seriously affect the response time
         </p>
       </div>
       <div class="col-3"></div>
@@ -48,12 +54,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { UserStore } from 'stores/example-store';
 
 export default defineComponent({
   name: 'HomePage',
-  components: {},
   setup() {
-    return {};
+    return {
+      userStore: UserStore(),
+    };
   },
 });
 </script>

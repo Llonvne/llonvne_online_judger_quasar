@@ -57,7 +57,7 @@
           </tbody>
         </q-markup-table>
         <q-inner-loading
-          :showing="!problemStore.initialized"
+          :showing="problems === null"
           label="Please wait..."
           label-class="text-teal"
           label-style="font-size: 1.1em"
@@ -70,6 +70,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { ProblemStore } from 'stores/example-store';
+import { api } from 'boot/axios';
 
 export default defineComponent({
   name: 'ProblemPage',
@@ -79,24 +80,29 @@ export default defineComponent({
     const sourceFilter = ref(null);
     const tagFilter = ref(null);
     const authorFilter = ref(null);
-    const problemStore = ProblemStore();
-    if (!problemStore.initialized) {
-      problemStore.syncProblems();
-    }
+    const problems = ref(null);
     return {
-      problemStore,
       problemNameFilter,
       sourceFilter,
       tagFilter,
       authorFilter,
+      problems,
     };
+  },
+  mounted() {
+    api
+      .get('http://localhost:9003/api/problems?projection=problems')
+      .then((data) => {
+        console.log(data.data);
+        this.problems = data.data['_embedded']['problems'];
+      });
   },
   computed: {
     filteredByName() {
       if (this.problemNameFilter == null) {
-        return this.problemStore.problems;
+        return this.problems;
       } else {
-        return this.problemStore.problems.filter((problem) => {
+        return this.problems.filter((problem) => {
           return problem['problemName'].includes(this.problemNameFilter);
         });
       }

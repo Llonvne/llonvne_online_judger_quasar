@@ -21,7 +21,6 @@
         />
 
         <div
-          v-if="true"
           class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center no-wrap"
         >
           <router-link to="/problem" class="text-white"> Problems</router-link>
@@ -122,7 +121,11 @@
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>Settings</q-item-section>
                 </q-item>
-                <q-item clickable class="GL__menu-link">
+                <q-item
+                  clickable
+                  class="GL__menu-link"
+                  @click="userStore.logout()"
+                >
                   <q-item-section>Sign out</q-item-section>
                 </q-item>
               </q-list>
@@ -135,7 +138,9 @@
             <router-link to="login">Sign in</router-link>
           </q-btn>
           &nbsp;
-          <q-btn>Sign up</q-btn>
+          <q-btn>
+            <router-link to="signup">Sign up</router-link>
+          </q-btn>
         </div>
       </q-toolbar>
     </q-header>
@@ -154,7 +159,7 @@ export default {
 
   setup() {
     const userStore = UserStore();
-
+    console.log(userStore.loginUser);
     return {
       userStore,
     };

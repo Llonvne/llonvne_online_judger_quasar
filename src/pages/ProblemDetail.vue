@@ -30,7 +30,7 @@
           <div class="text-h6">Language:</div>
           <q-select
             v-model="chosenLanguage"
-            :options="languageDisplayable"
+            :options="displayables()"
             label="Choose your solution language"
           />
         </q-card-section>
@@ -133,7 +133,7 @@
     </div>
     <div class="col-1"></div>
     <q-inner-loading
-      :showing="supportLanguage == null || problem == null || testCases == null"
+      :showing="problem == null"
       label="Please wait..."
       label-class="text-teal"
       label-style="font-size: 1.1em"
@@ -145,7 +145,6 @@
 import { defineComponent, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { api } from 'boot/axios';
-import axios from 'axios';
 import { UserStore } from 'stores/example-store';
 
 export default defineComponent({
@@ -154,47 +153,30 @@ export default defineComponent({
   setup() {
     const curProblem = ref({});
     const submitDialog = ref(false);
-    const supportLanguage = ref(null);
-    const testCases = ref(null);
     const chosenLanguage = ref(null);
     const solution = ref(null);
     const userStore = UserStore();
     return {
       problem: curProblem,
       submitDialog,
-      supportLanguage,
       chosenLanguage,
       solution,
-      testCases,
       userStore,
     };
   },
   mounted() {
-    api
-      .get(useRoute().query.problemLinks)
-      .then((data) => {
-        console.log(data.data);
-        this.problem = data.data;
-      })
-      .then(() => {
-        // this.syncSupportLanguages(this.problem);
-        // this.syncTestCases(this.problem);
-        axios
-          .all([
-            axios.get(this.problem['_links']['supportLanguages']['href']),
-            axios.get(this.problem['_links']['testCases']['href']),
-          ])
-          .then(
-            axios.spread((data1, data2) => {
-              this.supportLanguage = data1.data['_embedded']['languages'];
-              this.problem.supportLanguages = this.supportLanguage;
-              this.testCases = data2.data['_embedded']['testcases'];
-              this.problem.testCases = this.testCases;
-            })
-          );
-      });
+    api.get(`${useRoute().query.problemLinks}?projection=all`).then((data) => {
+      this.problem = data.data;
+      console.log(this.problem);
+    });
   },
   methods: {
+    displayables() {
+      return this.problem.supportLanguages.map((language) => {
+        console.log(language);
+        return language.languageName + ' ' + language.languageVersion;
+      });
+    },
     copyToClipboard(text: string) {
       console.log('on');
       navigator.permissions
@@ -230,13 +212,6 @@ export default defineComponent({
         .then((res) => {
           console.log(res);
         });
-    },
-  },
-  computed: {
-    languageDisplayable(): any {
-      return this.supportLanguage.map((language) => {
-        return language.languageName + ' ' + language.languageVersion;
-      });
     },
   },
 });

@@ -35,8 +35,30 @@ export const ProblemStore = defineStore('problem', {
   },
 });
 
+function getFormLocal() {
+  console.log(localStorage.getItem('user'));
+  if (localStorage.getItem('user') == 'null') {
+    return null;
+  } else {
+    return JSON.parse(localStorage.getItem('user'));
+  }
+}
+
 export const UserStore = defineStore('user', {
   state: () => ({
-    loginUser: null,
+    loginUser: getFormLocal(),
   }),
+  actions: {
+    login(user: any) {
+      localStorage.setItem('user', JSON.stringify(user));
+      this.loginUser = user;
+    },
+    logout() {
+      this.loginUser = null;
+      localStorage.setItem('user', JSON.stringify(null));
+    },
+    isLogin() {
+      return this.loginUser == null;
+    },
+  },
 });
