@@ -100,7 +100,9 @@
                 </q-item>
                 <q-separator />
                 <q-item clickable class="GL__menu-link">
-                  <q-item-section>Your profile</q-item-section>
+                  <router-link to="profile">
+                    <q-item-section>Your profile</q-item-section>
+                  </router-link>
                 </q-item>
                 <q-item clickable class="GL__menu-link">
                   <q-item-section>Your repositories</q-item-section>

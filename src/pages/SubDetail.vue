@@ -14,7 +14,7 @@
             <q-item-section>
               <q-item-label>User</q-item-label>
               <q-item-label caption
-                >{{ submission?.user.username }}
+                >{{ submission?.user?.username ?? '' }}
               </q-item-label>
             </q-item-section>
           </q-item>

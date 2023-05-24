@@ -69,7 +69,6 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { ProblemStore } from 'stores/example-store';
 import { api } from 'boot/axios';
 
 export default defineComponent({

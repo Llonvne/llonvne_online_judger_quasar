@@ -62,7 +62,12 @@
           @click="submitDialog = true"
           :disable="this.userStore.loginUser == null"
         />&nbsp;
-        <q-btn style="background: deeppink; color: white" label="Favorite" />
+        <q-btn
+          style="background: deeppink; color: white"
+          label="Favorite"
+          @click="addFavorite"
+          :disable="this.userStore.loginUser == null"
+        />
         <br />
         <!--        <q-btn flat>Submit</q-btn>-->
         <!--        <q-btn flat>Submit</q-btn>-->
@@ -167,32 +172,17 @@ export default defineComponent({
   mounted() {
     api.get(`${useRoute().query.problemLinks}?projection=all`).then((data) => {
       this.problem = data.data;
-      console.log(this.problem);
     });
   },
   methods: {
+    addFavorite() {
+      api.get('public/');
+    },
     displayables() {
       return this.problem.supportLanguages.map((language) => {
         console.log(language);
         return language.languageName + ' ' + language.languageVersion;
       });
-    },
-    copyToClipboard(text: string) {
-      console.log('on');
-      navigator.permissions
-        .query({ name: 'clipboard-write' })
-        .then((result) => {
-          if (result.state === 'granted' || result.state === 'prompt') {
-            navigator.clipboard
-              .writeText(text)
-              .then(() => {
-                console.log('文本已成功复制到剪贴板');
-              })
-              .catch((err) => {
-                console.error('复制文本到剪贴板失败:', err);
-              });
-          }
-        });
     },
     submitSubmission() {
       console.log(this.userStore.loginUser.id);
@@ -205,7 +195,7 @@ export default defineComponent({
               currentValue.languageVersion == this.chosenLanguage.split(' ')[1]
             );
           }).id,
-          judger: '',
+          judger: null,
           rawCode: btoa(this.solution),
           userId: this.userStore.loginUser.id,
         })

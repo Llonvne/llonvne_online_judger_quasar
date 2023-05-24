@@ -31,7 +31,6 @@
 import { defineComponent, ref } from 'vue';
 import { api } from 'boot/axios';
 import { UserStore } from 'stores/example-store';
-import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
@@ -45,7 +44,6 @@ export default defineComponent({
     };
   },
   methods: {
-    useRouter,
     login() {
       api
         .post('http://localhost:9003/signin', {

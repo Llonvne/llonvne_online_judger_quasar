@@ -1,64 +1,55 @@
 import { defineStore } from 'pinia';
-import { api } from 'boot/axios';
 
-export const useCounterStore = defineStore('counter', {
-  state: () => ({
-    counter: 0,
-  }),
-  getters: {
-    doubleCount: (state) => state.counter * 2,
-  },
-  actions: {
-    increment() {
-      this.counter++;
-    },
-  },
-});
-
-export const ProblemStore = defineStore('problem', {
-  state: () => ({
-    problems: [],
-    initialized: false,
-  }),
-  getters: {
-    getProblems: (state) => state.problems,
-  },
-  actions: {
-    syncProblems() {
-      return api
-        .get('http://localhost:9003/api/problems?size=5')
-        .then((data) => {
-          this.initialized = true;
-          this.problems = data.data['_embedded']['problems'];
-        });
-    },
-  },
-});
-
-function getFormLocal() {
+function getFormLocal(): UserLoginProjection | null {
   console.log(localStorage.getItem('user'));
-  if (localStorage.getItem('user') == 'null') {
+  const userJson = localStorage.getItem('user');
+  if (userJson == null) {
     return null;
-  } else {
-    return JSON.parse(localStorage.getItem('user'));
+  }
+  {
+    return JSON.parse(userJson) as UserLoginProjection;
+  }
+}
+
+export class UserLoginProjection {
+  username: string;
+  id: number;
+  gender?: string | null;
+  nickname?: string | null;
+  realname?: string | null;
+  description: string;
+  registerDate: string;
+  school: string;
+  qq: string;
+  email: string;
+
+  constructor(data: any) {
+    this.username = data.username;
+    this.id = data.id;
+    this.gender = data.gender;
+    this.nickname = data.nickname;
+    this.realname = data.realname;
+    this.description = data.description;
+    this.registerDate = data.registerDate;
+    this.school = data.school;
+    this.qq = data.qq;
+    this.email = data.email;
   }
 }
 
 export const UserStore = defineStore('user', {
   state: () => ({
-    loginUser: getFormLocal(),
+    loginUser: getFormLocal() as UserLoginProjection | null,
   }),
   actions: {
     login(user: any) {
+      console.log(user);
       localStorage.setItem('user', JSON.stringify(user));
-      this.loginUser = user;
+      this.loginUser = new UserLoginProjection(user);
     },
     logout() {
       this.loginUser = null;
       localStorage.setItem('user', JSON.stringify(null));
-    },
-    isLogin() {
-      return this.loginUser == null;
     },
   },
 });

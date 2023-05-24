@@ -34,7 +34,7 @@ export class Problem {
 
 export class User {
   constructor(
-    public username: string,
+    public username: string | null,
     public nickname: string | null,
     public realname: string | null,
     public gender: string | null
