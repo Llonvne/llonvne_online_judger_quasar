@@ -59,6 +59,22 @@
           }}</span>
         </div>
       </div>
+
+      <div class="favorite-container">
+        <div class="text-h6">Favorite Problems</div>
+        <div
+          v-for="problem in this.userFavoriteProblems"
+          :key="problem.problemId"
+          @click="routeToProblemDetailPage(this['$router'], problem.problemId)"
+        >
+          <q-chip
+            class="q-ma-sm"
+            v-bind:label="problem.problemName"
+            color="primary"
+            outline
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +84,8 @@ import { defineComponent, onMounted, Ref, ref } from 'vue';
 import { UserStore } from 'stores/example-store';
 import { api } from 'boot/axios';
 import { Problem, Submission } from 'src/entities/Submission';
+import { route } from 'quasar/wrappers';
+import { routeToProblemDetailPage } from 'src/utils/RouterUtils';
 
 function getDaysBefore(days = 1): string {
   const currentDate = new Date(); // 当前时间
@@ -95,6 +113,12 @@ function filterSubmissionsByProblemId(submissions: Submission[]): Submission[] {
 }
 
 export default defineComponent({
+  methods: {
+    routeToProblemDetailPage,
+    route() {
+      return route;
+    },
+  },
   setup() {
     const userStore = UserStore();
     let before24HoursSubmissions = ref<Array<Submission> | null>(null);
@@ -102,6 +126,7 @@ export default defineComponent({
     let before30DaysSubmissions = ref<Array<Submission> | null>(null);
     let overallAcceptedSubmissions = ref<Array<Submission> | null>(null);
     let overallAttemptedProblems = ref<Array<Problem> | null>(null);
+    let userFavoriteProblems = ref<Array<Problem> | null>(null);
 
     const getBeforeIosDateAcceptedSubmission = (
       iosDate: string,
@@ -112,10 +137,25 @@ export default defineComponent({
           `submissions/search/findByUserIdAndPreviousDay?userId=${userStore?.loginUser?.id}&limit=${iosDate}&projection=all`
         )
         .then((data) => {
-          console.log(data.data);
           to.value = filterSubmissionsByProblemId(
             data.data['_embedded']['submissions'] as Array<Submission>
           );
+        });
+    };
+
+    const getUserFavoriteProblems = () => {
+      if (userStore.loginUser == null) {
+        console.error(
+          'loginUser is null,failed to load user favorite problems'
+        );
+        return;
+      }
+      api
+        .get(`users/${userStore.loginUser.id}/favoritesProblems`)
+        .then((data) => {
+          userFavoriteProblems.value = data.data['_embedded'][
+            'problems'
+          ] as Array<Problem>;
         });
     };
 
@@ -138,6 +178,8 @@ export default defineComponent({
         overallAcceptedSubmissions
       );
 
+      getUserFavoriteProblems();
+
       api
         .get(
           `users/search/getUserAttemptedProblems?userId=${userStore.loginUser?.id}`
@@ -156,6 +198,7 @@ export default defineComponent({
       before30DaysSubmissions,
       overallAcceptedSubmissions,
       overallAttemptedProblems,
+      userFavoriteProblems,
     };
   },
 });

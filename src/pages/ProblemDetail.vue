@@ -4,25 +4,20 @@
       <q-card class="column full-height" style="width: 700px">
         <q-card-section>
           <div class="text-h6">
-            Submit for <strong>{{ problem.problemName }}</strong>
+            Submit for <strong>{{ problem?.problemName }}</strong>
           </div>
         </q-card-section>
 
         <q-separator />
 
         <q-card-section class="q-pt-none">
-          <div class="text-h6">Problem: {{ problem.problemName }}</div>
+          <div class="text-h6">Problem: {{ problem?.problemName }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
           <div class="text-h6">
             Submitter:
-            <q-input
-              v-model="userStore.loginUser.username"
-              disable
-              filled
-              type="standard"
-            />
+            {{ this.userStore.loginUser?.username ?? 'Not logged in' }}
           </div>
         </q-card-section>
 
@@ -30,7 +25,7 @@
           <div class="text-h6">Language:</div>
           <q-select
             v-model="chosenLanguage"
-            :options="displayables()"
+            :options="displayable()"
             label="Choose your solution language"
           />
         </q-card-section>
@@ -43,12 +38,7 @@
         </q-card-section>
 
         <q-card-actions>
-          <q-btn
-            flat
-            label="Submit"
-            @click="submitSubmission()"
-            v-close-popup
-          />
+          <q-btn flat label="Submit" @click="submitSubmission" v-close-popup />
           <q-btn flat label="Cancel" v-close-popup />
         </q-card-actions>
       </q-card>
@@ -61,32 +51,41 @@
           label="Submit"
           @click="submitDialog = true"
           :disable="this.userStore.loginUser == null"
+          icon="send"
         />&nbsp;
         <q-btn
-          style="background: deeppink; color: white"
-          label="Favorite"
-          @click="addFavorite"
+          style="background: deeppink; color: white; margin-top: 1em"
           :disable="this.userStore.loginUser == null"
-        />
+          @click="toggleFavorite"
+        >
+          <div v-if="isUserFavorite">
+            <q-icon name="favorite" />
+            <span>Unfavorite</span>
+          </div>
+          <div v-else>
+            <q-icon name="favorite_border" />
+            <span>Favorite</span>
+          </div>
+        </q-btn>
         <br />
-        <!--        <q-btn flat>Submit</q-btn>-->
-        <!--        <q-btn flat>Submit</q-btn>-->
         <br />
         <br />
-        <p><strong>Time Limit</strong> :&nbsp;{{ problem.timeLimit }} ms</p>
-        <p><strong>Memory Limit</strong> :&nbsp;{{ problem.memoryLimit }} KB</p>
-        <p><strong>Problem Source</strong> :&nbsp;{{ problem.source }}</p>
-        <p><strong>Problem Author</strong> :&nbsp;{{ problem.author }}</p>
-        <p><strong>Solved</strong> :&nbsp; {{ problem.solved }}</p>
-        <q-badge color="primary" v-for="tag in problem['tags']" :key="tag">
+        <p><strong>Time Limit</strong> :&nbsp;{{ problem?.timeLimit }} ms</p>
+        <p>
+          <strong>Memory Limit</strong> :&nbsp;{{ problem?.memoryLimit }} KB
+        </p>
+        <p><strong>Problem Source</strong> :&nbsp;{{ problem?.source }}</p>
+        <p><strong>Problem Author</strong> :&nbsp;{{ problem?.author }}</p>
+        <p><strong>Solved</strong> :&nbsp; {{ problem?.solved }}</p>
+        <q-badge color="primary" v-for="tag in problem?.tags ?? []" :key="tag">
           {{ tag }} &nbsp;
         </q-badge>
       </div>
     </div>
     <div class="col-grow">
-      <h3 style="display: inline-block">{{ problem.problemName }}</h3>
+      <h3 style="display: inline-block">{{ problem?.problemName }}</h3>
       <div>
-        Created by <a href="">{{ problem.author }}</a>
+        Created by <a href="">{{ problem?.author }}</a>
       </div>
       <q-layout
         view="lhh LpR lff"
@@ -102,7 +101,7 @@
 
         <q-page-container>
           <q-page padding>
-            {{ problem.context }}
+            {{ problem?.context }}
           </q-page>
         </q-page-container>
       </q-layout>
@@ -121,7 +120,7 @@
 
         <q-page-container>
           <q-page padding>
-            <div v-for="(testcase, index) in problem.testCases" :key="index">
+            <div v-for="(testcase, index) in problem?.testCases" :key="index">
               <strong>Testcase {{ index + 1 }}</strong
               ><br />
               <strong>Input:</strong><br />
@@ -147,62 +146,126 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { api } from 'boot/axios';
 import { UserStore } from 'stores/example-store';
+import { Language } from 'src/entities/Submission';
+import axios from 'axios';
+
+class TestCase {
+  constructor(public id: number, public input: string, public output: string) {}
+}
+
+class Problem {
+  constructor(
+    public problemId: number,
+    public problemName: string,
+    public context: string,
+    public timeLimit: number,
+    public memoryLimit: number,
+    public source: string,
+    public author: string,
+    public solved: number,
+    public tags: string[],
+    public supportLanguages: Language[],
+    public testCases: TestCase[]
+  ) {}
+}
 
 export default defineComponent({
   name: 'ProblemDetail',
   components: {},
   setup() {
-    const curProblem = ref({});
-    const submitDialog = ref(false);
-    const chosenLanguage = ref(null);
-    const solution = ref(null);
+    const curProblem = ref<Problem | null>(null);
+    const submitDialog = ref<boolean>(false);
+    const chosenLanguage = ref<string | null>(null);
+    const solution = ref<string | null>(null);
     const userStore = UserStore();
+    const isUserFavorite = ref<boolean>(false);
+
+    onMounted(() => {
+      api
+        .get(`problems/${useRoute().query.problemId}?projection=all`)
+        .then((data) => {
+          curProblem.value = data.data as Problem | null;
+        })
+        .then(() => {
+          if (userStore.loginUser != null) {
+            api
+              .get(
+                `users/${userStore.loginUser.id}/favoritesProblems/${curProblem.value?.problemId}`
+              )
+              .then(() => {
+                isUserFavorite.value = true;
+              })
+              .catch(() => {
+                console.log('123');
+              });
+          }
+        });
+    });
+
+    const displayable = () => {
+      return curProblem?.value?.supportLanguages?.map((language) => {
+        return language.languageName + ' ' + language.languageVersion;
+      });
+    };
+
+    const submitSubmission = () => {
+      api
+        .post('http://localhost:9003/judge', {
+          problemId: curProblem.value?.problemId,
+          languageId: curProblem.value?.supportLanguages?.find(
+            (currentValue) => {
+              return (
+                currentValue?.languageName ==
+                  chosenLanguage?.value?.split(' ')[0] &&
+                currentValue?.languageVersion ==
+                  chosenLanguage?.value?.split(' ')[1]
+              );
+            }
+          )?.id,
+          judger: null,
+          rawCode: btoa(solution?.value ?? ''),
+          userId: userStore.loginUser?.id,
+        })
+        .then((res) => {
+          console.log(res);
+        });
+    };
+
+    const toggleFavorite = () => {
+      if (isUserFavorite.value) {
+        api
+          .delete(
+            `users/${userStore.loginUser?.id}/favoritesProblems/${curProblem.value?.problemId}`
+          )
+          .then(() => {
+            isUserFavorite.value = false;
+          });
+      } else {
+        axios
+          .get(
+            `http://localhost:9003/public/favorite/add/${userStore.loginUser?.id}/${curProblem.value?.problemId}`
+          )
+          .then(() => {
+            isUserFavorite.value = true;
+          });
+      }
+    };
+
     return {
       problem: curProblem,
       submitDialog,
       chosenLanguage,
       solution,
       userStore,
+      displayable,
+      submitSubmission,
+      isUserFavorite,
+      toggleFavorite,
     };
-  },
-  mounted() {
-    api.get(`${useRoute().query.problemLinks}?projection=all`).then((data) => {
-      this.problem = data.data;
-    });
-  },
-  methods: {
-    addFavorite() {
-      api.get('public/');
-    },
-    displayables() {
-      return this.problem.supportLanguages.map((language) => {
-        console.log(language);
-        return language.languageName + ' ' + language.languageVersion;
-      });
-    },
-    submitSubmission() {
-      console.log(this.userStore.loginUser.id);
-      api
-        .post('http://localhost:9003/judge', {
-          problemId: this.problem.problemId,
-          languageId: this.problem.supportLanguages.find((currentValue) => {
-            return (
-              currentValue.languageName == this.chosenLanguage.split(' ')[0] &&
-              currentValue.languageVersion == this.chosenLanguage.split(' ')[1]
-            );
-          }).id,
-          judger: null,
-          rawCode: btoa(this.solution),
-          userId: this.userStore.loginUser.id,
-        })
-        .then((res) => {
-          console.log(res);
-        });
-    },
   },
 });
 </script>

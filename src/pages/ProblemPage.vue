@@ -2,11 +2,40 @@
   <div class="q-pa-md">
     <div class="row">
       <div class="col-2">
+        <div class="q-pa-md" style="max-width: 350px">
+          <q-list bordered separator>
+            <q-item clickable v-ripple>
+              <q-item-section>All</q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple>
+              <q-item-section>
+                <q-item-label>Accepted</q-item-label>
+                <!--                <q-item-label caption>Caption</q-item-label>-->
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple>
+              <q-item-section>
+                <!--                <q-item-label overline>OVERLINE</q-item-label>-->
+                <q-item-label>Attempted</q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple>
+              <q-item-section>
+                <!--                <q-item-label overline>OVERLINE</q-item-label>-->
+                <q-item-label>Favorite</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
         <div style="margin-top: 2em; margin-left: 1em">
           <q-btn>Add Problem</q-btn>
         </div>
       </div>
-      <div class="col-10">
+      <div class="col-10" style="margin-top: 1em">
         <q-markup-table separator="vertical" flat bordered>
           <thead>
             <tr>
@@ -35,7 +64,7 @@
                   :to="{
                     name: 'detail',
                     query: {
-                      problemLinks: problem['_links']['self']['href'],
+                      problemId: problem['problemId'],
                     },
                   }"
                   >{{ problem['problemName'] }}

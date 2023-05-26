@@ -68,7 +68,14 @@
                 <div v-if="sub.user != null">{{ sub.user.username }}</div>
               </td>
               <td class="text-right">
-                <a :href="getProblemUrl(sub)">
+                <a
+                  @click="
+                    routeToProblemDetailPage(
+                      this['$router'],
+                      sub.problem.problemId
+                    )
+                  "
+                >
                   {{ sub.problem.problemName }}
                 </a>
               </td>
@@ -127,6 +134,7 @@
 import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from 'boot/axios';
 import { UserStore } from 'stores/example-store';
+import { routeToProblemDetailPage } from 'src/utils/RouterUtils';
 
 class Submission {
   id: number;
@@ -186,6 +194,7 @@ class Page {
 
 export default defineComponent({
   name: 'statusPage',
+  methods: { routeToProblemDetailPage },
   components: {},
   setup() {
     const submissions = ref<Array<Submission> | null>(null);
