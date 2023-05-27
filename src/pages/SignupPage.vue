@@ -321,6 +321,7 @@
 import axios from 'axios';
 import { UserStore } from 'stores/example-store';
 import { useRouter } from 'vue-router';
+import { UserUtils } from 'src/utils/UserUtils';
 
 export default {
   data() {

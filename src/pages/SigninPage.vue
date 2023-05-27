@@ -2,7 +2,6 @@
   <div class="container">
     <div class="card">
       <div class="logo-container">
-        <!--        <img class="logo" src="path-to-your-logo.png" alt="logo" />-->
         <h1 class="title">Online Judge Login</h1>
       </div>
       <q-input
@@ -29,38 +28,27 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { api } from 'boot/axios';
-import { UserStore } from 'stores/example-store';
+import { UserLoginProjection, UserStore } from 'stores/example-store';
+import { UserUtils } from 'src/utils/UserUtils';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
     const username = ref('');
     const password = ref('');
     const userStore = UserStore();
+    const userLoginProjection = ref<UserLoginProjection | null>(null);
+    const router = useRouter();
+    const login = () => {
+      UserUtils.methods.login(username.value, password.value);
+      router.push('/');
+    };
     return {
       username,
       password,
       userStore,
+      login,
     };
-  },
-  methods: {
-    login() {
-      api
-        .post('http://localhost:9003/signin', {
-          username: this.username,
-          password: this.password,
-        })
-        .then((data) => {
-          if (data.data.id == null) {
-            alert('Login failed...');
-            this.username = '';
-            this.password = '';
-          } else {
-            this.userStore.login(data.data);
-            this.$router.push('/home');
-          }
-        });
-    },
   },
 });
 </script>

@@ -4,8 +4,6 @@ import {
   createRouter,
   createWebHashHistory,
   createWebHistory,
-  useRoute,
-  useRouter,
 } from 'vue-router';
 
 import routes from './routes';
@@ -20,7 +18,7 @@ import { UserStore } from 'stores/example-store';
  * with the Router instance.
  */
 
-export default route(function (/* { store, ssrContext } */) {
+export default route(async function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === 'history'
@@ -41,8 +39,8 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.name !== 'home' &&
       to.name !== 'problem' &&
-      to.name != 'detail' &&
-      to.name != 'signup'
+      to.name !== 'detail' &&
+      to.name !== 'signup'
     ) {
       if (
         // 检查用户是否已登录
@@ -55,6 +53,5 @@ export default route(function (/* { store, ssrContext } */) {
       }
     }
   });
-
   return Router;
 });
