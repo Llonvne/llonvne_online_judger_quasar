@@ -32,7 +32,7 @@
         </div>
 
         <div style="margin-top: 2em; margin-left: 1em">
-          <q-btn>Add Problem</q-btn>
+          <q-btn to="addProblem">Add Problem</q-btn>
         </div>
       </div>
       <div class="col-10" style="margin-top: 1em">
