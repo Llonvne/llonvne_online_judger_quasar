@@ -14,14 +14,15 @@ function getFormLocal(): UserLoginProjection | null {
 export class UserLoginProjection {
   username: string;
   id: number;
-  gender?: string | null;
-  nickname?: string | null;
-  realname?: string | null;
+  gender: string;
+  nickname: string;
+  realname: string;
   description: string;
   registerDate: string;
   school: string;
   qq: string;
   email: string;
+  role: string;
 
   constructor(data: any) {
     this.username = data.username;
@@ -34,6 +35,7 @@ export class UserLoginProjection {
     this.school = data.school;
     this.qq = data.qq;
     this.email = data.email;
+    this.role = data.role;
   }
 }
 
@@ -50,6 +52,9 @@ export const UserStore = defineStore('user', {
     logout() {
       this.loginUser = null;
       localStorage.setItem('user', JSON.stringify(null));
+    },
+    isLogin() {
+      return this.loginUser != null;
     },
   },
 });

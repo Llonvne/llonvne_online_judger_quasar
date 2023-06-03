@@ -49,6 +49,11 @@ const routes: RouteRecordRaw[] = [
         name: 'addProblem',
         component: () => import('pages/AddProblem.vue'),
       },
+      {
+        path: 'updateUser',
+        name: 'updateUser',
+        component: () => import('pages/UpdateUser.vue'),
+      },
     ],
   },
 

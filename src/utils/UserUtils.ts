@@ -1,9 +1,16 @@
 import { UserLoginProjection, UserStore } from 'stores/example-store';
-import { publicApi, ApiType } from 'src/utils/api';
+import { ApiType, publicApi } from 'src/utils/api';
 
 const userStore = UserStore();
 
 type UserCallback = (user: UserLoginProjection) => void;
+
+export enum Show {
+  All,
+  Accepted,
+  Attempted,
+  Favorite,
+}
 
 export const UserUtils = {
   methods: {

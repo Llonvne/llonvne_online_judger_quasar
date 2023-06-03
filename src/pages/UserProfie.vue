@@ -6,6 +6,27 @@
       </q-avatar>
       <div class="username">{{ userStore.loginUser?.username ?? '' }}</div>
       <div class="nickname">{{ userStore.loginUser?.nickname ?? '' }}</div>
+
+      <div
+        v-if="userStore.loginUser?.role == 'Administrator'"
+        style="margin-top: 1em"
+      >
+        <q-chip
+          outline
+          square
+          color="red"
+          text-color="white"
+          label="Administrator"
+        />
+      </div>
+      <div
+        v-if="userStore.loginUser?.role == 'Contestant'"
+        style="margin-top: 1em"
+      >
+        <q-chip outline color="primary" text-color="white"> Contestant</q-chip>
+      </div>
+
+      <q-btn style="margin-top: 1em" :to="{ name: 'updateUser' }">Update</q-btn>
     </div>
 
     <div class="content">

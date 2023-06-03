@@ -85,7 +85,7 @@
                   <q-item-section>
                     <div>
                       Signed in as
-                      <strong>{{ userStore.loginUser.username }}</strong>
+                      <strong>{{ userStore.loginUser?.username }}</strong>
                     </div>
                   </q-item-section>
                 </q-item>
@@ -94,7 +94,7 @@
                   <q-item-section>
                     <div>
                       <q-icon name="tag_faces" color="blue-9" size="18px" />
-                      Set your status
+                      {{ userStore.loginUser?.role }}
                     </div>
                   </q-item-section>
                 </q-item>

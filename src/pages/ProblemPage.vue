@@ -4,25 +4,43 @@
       <div class="col-2">
         <div class="q-pa-md" style="max-width: 350px">
           <q-list bordered separator>
-            <q-item clickable v-ripple>
-              <q-item-section>All</q-item-section>
+            <q-item clickable v-ripple :active="show == Show.All">
+              <q-item-section @click="show = Show.All">All</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple>
+            <q-item
+              clickable
+              v-ripple
+              :active="show == Show.Accepted"
+              :disable="!userStore.isLogin()"
+              @click="show = Show.Accepted"
+            >
               <q-item-section>
                 <q-item-label>Accepted</q-item-label>
                 <!--                <q-item-label caption>Caption</q-item-label>-->
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple>
+            <q-item
+              clickable
+              v-ripple
+              :active="show == Show.Attempted"
+              :disable="!userStore.isLogin()"
+              @click="show = Show.Attempted"
+            >
               <q-item-section>
                 <!--                <q-item-label overline>OVERLINE</q-item-label>-->
                 <q-item-label>Attempted</q-item-label>
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple>
+            <q-item
+              clickable
+              v-ripple
+              :active="show == Show.Favorite"
+              :disable="!userStore.isLogin()"
+              @click="show = Show.Favorite"
+            >
               <q-item-section>
                 <!--                <q-item-label overline>OVERLINE</q-item-label>-->
                 <q-item-label>Favorite</q-item-label>
@@ -30,9 +48,10 @@
             </q-item>
           </q-list>
         </div>
-
-        <div style="margin-top: 2em; margin-left: 1em">
-          <q-btn to="addProblem">Add Problem</q-btn>
+        <div v-show="isCurrentUserAllowAddProblem()">
+          <div style="margin-top: 2em; margin-left: 1em">
+            <q-btn to="addProblem">Add Problem</q-btn>
+          </div>
         </div>
       </div>
       <div class="col-10" style="margin-top: 1em">
@@ -40,25 +59,22 @@
           <thead>
             <tr>
               <th class="text-left">
-                <q-input square v-model="problemNameFilter" label="Title" />
+                <q-input square v-model="name" label="Title" />
               </th>
               <th class="text-right">
-                <q-input square v-model="sourceFilter" label="Source" />
+                <q-input square v-model="source" label="Source" />
               </th>
               <th class="text-right">Solved</th>
               <th class="text-right">
-                <q-input square v-model="tagFilter" label="Tags" />
+                <q-input square v-model="tag" label="Tags" />
               </th>
               <th class="text-right">
-                <q-input square v-model="authorFilter" label="Author" />
+                <q-input square v-model="author" label="Author" />
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="problem in filteredByAuthor"
-              :key="problem['problemName']"
-            >
+            <tr v-for="problem in problems" :key="problem['problemName']">
               <td class="text-left">
                 <router-link
                   :to="{
@@ -97,74 +113,115 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from 'boot/axios';
+import { Show } from 'src/utils/UserUtils';
+import { Problem } from 'src/entities/Submission';
+import { UserStore } from 'stores/example-store';
 
 export default defineComponent({
   name: 'ProblemPage',
-  components: {},
-  setup() {
-    const problemNameFilter = ref(null);
-    const sourceFilter = ref(null);
-    const tagFilter = ref(null);
-    const authorFilter = ref(null);
-    const problems = ref(null);
-    return {
-      problemNameFilter,
-      sourceFilter,
-      tagFilter,
-      authorFilter,
-      problems,
-    };
-  },
-  mounted() {
-    api
-      .get('http://localhost:9003/api/problems?projection=problems')
-      .then((data) => {
-        console.log(data.data);
-        this.problems = data.data['_embedded']['problems'];
-      });
-  },
   computed: {
-    filteredByName() {
-      if (this.problemNameFilter == null) {
-        return this.problems;
-      } else {
-        return this.problems.filter((problem) => {
-          return problem['problemName'].includes(this.problemNameFilter);
-        });
-      }
+    Show() {
+      return Show;
     },
-    filteredBySource() {
-      if (this.sourceFilter == null) {
-        return this.filteredByName;
+  },
+  setup() {
+    const name = ref<string | null>(null);
+    const author = ref<string | null>(null);
+    const source = ref<string | null>(null);
+    const tag = ref<string | null>(null);
+    const problems = ref<Problem[]>([]);
+    const accepted = ref<Problem[]>([]);
+    const attempted = ref<Problem[]>([]);
+    const favorite = ref<Problem[]>([]);
+    const userStore = UserStore();
+    const show = ref<Show>(Show.All);
+    let origin = ref<Problem[]>([]);
+    const allowAddProblem = ['Administrator', 'Creator'];
+
+    const isCurrentUserAllowAddProblem = () => {
+      if (userStore.loginUser == null) {
+        return false;
       } else {
-        return this.filteredByName.filter((problem) => {
-          return problem['source'].includes(this.sourceFilter);
-        });
+        return allowAddProblem.includes(userStore.loginUser.role);
       }
-    },
-    filteredByTag() {
-      if (this.tagFilter == null) {
-        return this.filteredBySource;
+    };
+
+    const loadProblem = () => {
+      return api
+        .get(
+          `/problems/search/findProblem?problemName=${
+            name.value ?? ''
+          }&author=${author.value ?? ''}&source=${source.value ?? ''}`
+        )
+        .then((response) => {
+          problems.value = response.data._embedded.problems;
+          origin.value = response.data._embedded.problems;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    onMounted(() => {
+      // 读取当前用户数据
+      if (userStore.loginUser != null) {
+        api
+          .get(`/users/${userStore.loginUser.id}?projection=problem`)
+          .then((resp) => {
+            accepted.value = resp.data.solvedProblem;
+            attempted.value = resp.data.attemptedProblem;
+            favorite.value = resp.data.favoritesProblems;
+          });
+      }
+      // 读取问题数据
+      loadProblem();
+    });
+
+    // 当 author, name, source, tag 变化时，重新请求数据
+    watch([name, author, source], () => {
+      loadProblem();
+    });
+
+    // 当 showAccepted 为 true，从 problems 找出 accept 里面的题目
+    watch(show, () => {
+      if (show.value == Show.Accepted) {
+        problems.value = origin.value.filter((problem) =>
+          accepted.value.some(
+            (accept) => accept.problemId === problem.problemId
+          )
+        );
+      } else if (show.value == Show.Attempted) {
+        problems.value = origin.value.filter((problem) =>
+          attempted.value.some(
+            (attempt) => attempt.problemId === problem.problemId
+          )
+        );
+      } else if (show.value == Show.Favorite) {
+        problems.value = origin.value.filter((problem) =>
+          favorite.value.some(
+            (favorite) => favorite.problemId === problem.problemId
+          )
+        );
       } else {
-        return this.filteredBySource.filter((problem) => {
-          for (const tag of problem['tags']) {
-            return tag.includes(this.tagFilter);
-          }
-          return false;
-        });
+        loadProblem();
       }
-    },
-    filteredByAuthor() {
-      if (this.authorFilter == null) {
-        return this.filteredByTag;
-      } else {
-        return this.filteredByTag.filter((problem) => {
-          return problem['author'].includes(this.authorFilter);
-        });
-      }
-    },
+    });
+
+    return {
+      name,
+      author,
+      source,
+      tag,
+      problems,
+      accepted,
+      attempted,
+      loadProblem,
+      show,
+      userStore,
+      isCurrentUserAllowAddProblem,
+    };
   },
 });
 </script>
