@@ -138,7 +138,8 @@ export default defineComponent({
           supportLanguages: chosenLanguages.value,
         })
         .then((response) => {
-          console.log('题目创建成功', response.data);
+          alert('题目创建成功');
+          $router.push('/problems');
         })
         .catch((error) => {
           console.error('创建问题失败', error);
