@@ -60,12 +60,23 @@
         >
           <div v-if="isUserFavorite">
             <q-icon name="favorite" />
-            <span>Unfavorite</span>
+            <span>UnFavorite</span>
           </div>
           <div v-else>
             <q-icon name="favorite_border" />
             <span>Favorite</span>
           </div>
+        </q-btn>
+        <q-btn
+          :disable="this.userStore.loginUser == null"
+          style="margin-top: 1em"
+          @click="
+            $router.push({
+              name: 'updateProblem',
+              query: { problemId: problem?.problemId },
+            })
+          "
+          >Update
         </q-btn>
         <br />
         <br />
@@ -147,7 +158,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { api } from 'boot/axios';
 import { UserStore } from 'stores/example-store';
 import { Language } from 'src/entities/Submission';
@@ -175,6 +186,7 @@ class Problem {
 
 export default defineComponent({
   name: 'ProblemDetail',
+  methods: { useRouter },
   components: {},
   setup() {
     const curProblem = ref<Problem | null>(null);

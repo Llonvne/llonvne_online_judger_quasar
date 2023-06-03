@@ -70,12 +70,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, vShow } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import { UserStore } from 'stores/example-store';
 import { api } from 'boot/axios';
 import { Language } from 'src/entities/Submission';
 
-class TestCase {
+export class TestCase {
   constructor(
     public name: string,
     public input: string,

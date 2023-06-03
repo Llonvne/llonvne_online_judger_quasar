@@ -1,3 +1,5 @@
+import { ProblemVisibilityType } from 'src/utils/UserUtils';
+
 export class Language {
   constructor(
     public id: number,
@@ -28,7 +30,9 @@ export class Problem {
     public source: string,
     public author: string,
     public solved: number,
-    public tags: string[]
+    public tags: string[],
+    public supportLanguages: Language[],
+    public visibility: ProblemVisibilityType
   ) {}
 }
 

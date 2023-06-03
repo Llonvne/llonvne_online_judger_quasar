@@ -65,6 +65,7 @@
                 <q-input square v-model="source" label="Source" />
               </th>
               <th class="text-right">Solved</th>
+              <th class="text-right">Languages</th>
               <th class="text-right">
                 <q-input square v-model="tag" label="Tags" />
               </th>
@@ -88,6 +89,16 @@
               </td>
               <td class="text-right">{{ problem['source'] }}</td>
               <td class="text-right">{{ problem['solved'] }}</td>
+              <td class="text-right">
+                <q-badge
+                  color="primary"
+                  v-for="language in problem.supportLanguages"
+                  :key="language.id"
+                  style="margin-left: 3px"
+                >
+                  {{ language.languageName }} {{ language.languageVersion }}
+                </q-badge>
+              </td>
               <td class="text-right">
                 <q-badge
                   color="primary"
@@ -151,9 +162,9 @@ export default defineComponent({
     const loadProblem = () => {
       return api
         .get(
-          `/problems/search/findProblem?problemName=${
-            name.value ?? ''
-          }&author=${author.value ?? ''}&source=${source.value ?? ''}`
+          `problems/search/findProblem?problemName=${name.value ?? ''}&author=${
+            author.value ?? ''
+          }&source=${source.value ?? ''}&projection=problems`
         )
         .then((response) => {
           problems.value = response.data._embedded.problems;
@@ -168,7 +179,7 @@ export default defineComponent({
       // 读取当前用户数据
       if (userStore.loginUser != null) {
         api
-          .get(`/users/${userStore.loginUser.id}?projection=problem`)
+          .get(`users/${userStore.loginUser.id}?projection=problem`)
           .then((resp) => {
             accepted.value = resp.data.solvedProblem;
             attempted.value = resp.data.attemptedProblem;

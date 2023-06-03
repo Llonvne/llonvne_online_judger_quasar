@@ -12,6 +12,11 @@ export enum Show {
   Favorite,
 }
 
+export enum ProblemVisibilityType {
+  Private,
+  Limited,
+  Public,
+}
 export const UserUtils = {
   methods: {
     login: (
