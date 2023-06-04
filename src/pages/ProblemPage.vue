@@ -151,6 +151,8 @@ export default defineComponent({
     let origin = ref<Problem[]>([]);
     const allowAddProblem = ['Administrator', 'Creator'];
 
+    const userFavorite = ref<number[]>([]);
+
     const isCurrentUserAllowAddProblem = () => {
       if (userStore.loginUser == null) {
         return false;
@@ -174,6 +176,10 @@ export default defineComponent({
           console.log(error);
         });
     };
+
+    userStore.getUserFavorite((favorite) => {
+      userFavorite.value = favorite;
+    });
 
     onMounted(() => {
       // 读取当前用户数据
@@ -211,9 +217,7 @@ export default defineComponent({
         );
       } else if (show.value == Show.Favorite) {
         problems.value = origin.value.filter((problem) =>
-          favorite.value.some(
-            (favorite) => favorite.problemId === problem.problemId
-          )
+          userFavorite.value.some((favorite) => favorite === problem.problemId)
         );
       } else {
         loadProblem();

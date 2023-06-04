@@ -211,9 +211,7 @@ export default defineComponent({
               .then(() => {
                 isUserFavorite.value = true;
               })
-              .catch(() => {
-                console.log('123');
-              });
+              .catch(() => {});
           }
         });
     });

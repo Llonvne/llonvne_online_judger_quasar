@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { api } from 'boot/axios';
 
 function getFormLocal(): UserLoginProjection | null {
   console.log(localStorage.getItem('user'));
@@ -55,6 +56,24 @@ export const UserStore = defineStore('user', {
     },
     isLogin() {
       return this.loginUser != null;
+    },
+    getUserFavorite(callback: (input: number[]) => void) {
+      api
+        .get(
+          `problems/search/findFavoriteProblemIdsByUserId?userId=${this.loginUser?.id}`
+        )
+        .then((response) => {
+          callback(response.data);
+        });
+    },
+    isFavorite(problemId: number, callback: (input: boolean) => void) {
+      api
+        .get(
+          `problems/search/isUserFavorite?problemId=${problemId}&userId=${this.loginUser?.id}`
+        )
+        .then((response) => {
+          callback(response.data);
+        });
     },
   },
 });
