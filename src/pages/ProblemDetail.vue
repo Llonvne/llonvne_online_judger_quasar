@@ -68,7 +68,7 @@
           </div>
         </q-btn>
         <q-btn
-          :disable="this.userStore.loginUser == null"
+          :disable="!isUserAbleUpdate()"
           style="margin-top: 1em"
           @click="
             $router.push({
@@ -267,6 +267,16 @@ export default defineComponent({
       }
     };
 
+    const isUserAbleUpdate = () => {
+      if (userStore.loginUser == null) {
+        return false;
+      } else if (userStore.loginUser.role == 'Administrator') {
+        return true;
+      } else {
+        return curProblem.value?.author == userStore.loginUser.username;
+      }
+    };
+
     return {
       problem: curProblem,
       submitDialog,
@@ -277,6 +287,7 @@ export default defineComponent({
       submitSubmission,
       isUserFavorite,
       toggleFavorite,
+      isUserAbleUpdate,
     };
   },
 });
