@@ -128,7 +128,7 @@ import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from 'boot/axios';
 import { Show } from 'src/utils/UserUtils';
 import { Problem } from 'src/entities/Submission';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 
 export default defineComponent({
   name: 'ProblemPage',
@@ -145,12 +145,10 @@ export default defineComponent({
     const problems = ref<Problem[]>([]);
     const accepted = ref<Problem[]>([]);
     const attempted = ref<Problem[]>([]);
-    const favorite = ref<Problem[]>([]);
     const userStore = UserStore();
     const show = ref<Show>(Show.All);
     let origin = ref<Problem[]>([]);
     const allowAddProblem = ['Administrator', 'Creator'];
-
     const userFavorite = ref<number[]>([]);
 
     const isCurrentUserAllowAddProblem = () => {
@@ -189,7 +187,6 @@ export default defineComponent({
           .then((resp) => {
             accepted.value = resp.data.solvedProblem;
             attempted.value = resp.data.attemptedProblem;
-            favorite.value = resp.data.favoritesProblems;
           });
       }
       // 读取问题数据

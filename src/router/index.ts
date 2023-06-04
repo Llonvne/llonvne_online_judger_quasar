@@ -7,7 +7,7 @@ import {
 } from 'vue-router';
 
 import routes from './routes';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 
 /*
  * If not building with SSR mode, you can

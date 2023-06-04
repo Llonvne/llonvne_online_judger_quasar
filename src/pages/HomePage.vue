@@ -54,7 +54,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 
 export default defineComponent({
   name: 'HomePage',

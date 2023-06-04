@@ -160,9 +160,8 @@
 import { defineComponent, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from 'boot/axios';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 import { Language } from 'src/entities/Submission';
-import axios from 'axios';
 
 class TestCase {
   constructor(public id: number, public input: string, public output: string) {}
@@ -204,14 +203,9 @@ export default defineComponent({
         })
         .then(() => {
           if (userStore.loginUser != null) {
-            api
-              .get(
-                `users/${userStore.loginUser.id}/favoritesProblems/${curProblem.value?.problemId}`
-              )
-              .then(() => {
-                isUserFavorite.value = true;
-              })
-              .catch(() => {});
+            userStore.isFavorite(curProblem.value?.problemId ?? -1, (resp) => {
+              isUserFavorite.value = resp;
+            });
           }
         });
     });
@@ -247,21 +241,13 @@ export default defineComponent({
 
     const toggleFavorite = () => {
       if (isUserFavorite.value) {
-        api
-          .delete(
-            `users/${userStore.loginUser?.id}/favoritesProblems/${curProblem.value?.problemId}`
-          )
-          .then(() => {
-            isUserFavorite.value = false;
-          });
+        userStore.deleteFavorite(curProblem.value?.problemId ?? -1, (resp) => {
+          isUserFavorite.value = resp;
+        });
       } else {
-        axios
-          .get(
-            `http://localhost:9003/public/favorite/add/${userStore.loginUser?.id}/${curProblem.value?.problemId}`
-          )
-          .then(() => {
-            isUserFavorite.value = true;
-          });
+        userStore.addFavorite(curProblem.value?.problemId ?? -1, (resp) => {
+          isUserFavorite.value = resp;
+        });
       }
     };
 

@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { UserLoginProjection, UserStore } from 'stores/example-store';
+import { UserLoginProjection, UserStore } from 'stores/user';
 import { UserUtils } from 'src/utils/UserUtils';
 import { useRouter } from 'vue-router';
 

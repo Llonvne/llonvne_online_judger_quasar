@@ -75,5 +75,19 @@ export const UserStore = defineStore('user', {
           callback(response.data);
         });
     },
+    addFavorite(problemId: number, callback: (input: boolean) => void) {
+      api
+        .get(`public/favorite/add/${this.loginUser?.id}/${problemId}`)
+        .then((resp) => {
+          callback(resp.data);
+        });
+    },
+    deleteFavorite(problemId: number, callback: (input: boolean) => void) {
+      api
+        .delete(`users/${this.loginUser?.id}/favoritesProblems/${problemId}`)
+        .then((resp) => {
+          callback(resp.data);
+        });
+    },
   },
 });

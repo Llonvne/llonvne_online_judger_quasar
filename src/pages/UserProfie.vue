@@ -102,7 +102,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, Ref, ref } from 'vue';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 import { api } from 'boot/axios';
 import { Problem, Submission } from 'src/entities/Submission';
 import { route } from 'quasar/wrappers';

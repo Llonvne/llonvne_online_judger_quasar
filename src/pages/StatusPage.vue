@@ -133,7 +133,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from 'vue';
 import { api } from 'boot/axios';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 import { routeToProblemDetailPage } from 'src/utils/RouterUtils';
 
 class Submission {

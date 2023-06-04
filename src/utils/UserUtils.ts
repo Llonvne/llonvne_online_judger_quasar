@@ -1,4 +1,4 @@
-import { UserLoginProjection, UserStore } from 'stores/example-store';
+import { UserLoginProjection, UserStore } from 'stores/user';
 import { ApiType, publicApi } from 'src/utils/api';
 
 const userStore = UserStore();

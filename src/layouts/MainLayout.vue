@@ -154,7 +154,7 @@
 </template>
 
 <script>
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 
 export default {
   name: 'MainLayout',

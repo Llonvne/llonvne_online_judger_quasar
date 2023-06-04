@@ -71,7 +71,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
-import { UserStore } from 'stores/example-store';
+import { UserStore } from 'stores/user';
 import { api } from 'boot/axios';
 import { Language } from 'src/entities/Submission';
 

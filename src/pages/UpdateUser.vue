@@ -21,7 +21,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { UserLoginProjection, UserStore } from 'stores/example-store';
+import { UserLoginProjection, UserStore } from 'stores/user';
 import { api } from 'boot/axios';
 
 export default defineComponent({
